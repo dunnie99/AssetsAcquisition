@@ -161,7 +161,10 @@ contract tradeAssets is ERC1155Holder {
             propertyPrice <= _tokenAddress.balanceOf(newOwner),
             "Insufficient balance for property purchase"
         );
-        _tokenAddress.transferFrom(newOwner, property.owner, propertyPrice);
+        _tokenAddress.transferFrom(newOwner, address(this), propertyPrice);
+
+        _tokenAddress.transfer(property.owner, propertyPrice);
+
         (property.nft).safeTransferFrom(
             address(this),
             newOwner,
@@ -169,13 +172,14 @@ contract tradeAssets is ERC1155Holder {
             1,
             "0x0"
         );
+        
         property.forSale = false;
         property.owner = newOwner;
 
         emit PropertySold(_propertyId, newOwner);
     }
 
-    function withdrawTokens(IERC1155 _tokenAddress, address _recipientAddress, uint256 _propertyNftId, uint256 _propertyID) external onlyOwner() {
+    function withdrawNFT(IERC1155 _tokenAddress, address _recipientAddress, uint256 _propertyNftId, uint256 _propertyID) external onlyOwner() {
         require(_recipientAddress != address(0), "Invalid address");
         require(idUsed[_propertyID], "Invalid PropertyID");
         Property storage property = properties[_propertyID];
@@ -190,6 +194,14 @@ contract tradeAssets is ERC1155Holder {
 
         emit onlyOwnerWithdrawal(msg.sender, _propertyNftId, _recipientAddress, _tokenAddress);
     }
+
+    function withdrawTokens(IERC20 _tokenAddress, address _recipientAddress, uint _amount) external onlyOwner(){
+        require(_recipientAddress != address(0), "Invalid address");
+        require(_amount <= _tokenAddress.balanceOf(address(this)), "Insufficient acount balance");
+        _tokenAddress.transferFrom(address(this), _recipientAddress, _amount);
+    }
+
+
 
     fallback() external payable {}
 
