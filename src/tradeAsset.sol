@@ -4,12 +4,12 @@ pragma solidity ^0.8.0;
 import "../lib/openzeppelin-contracts/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "./property.sol";
+import "./Property.sol";
 import "./IToken.sol";
 
 import "../lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract tradeAssets is ERC1155Holder {
+contract tradeAsset is ERC1155Holder {
     //function events
     event PropertyListed(
         uint256 indexed propertyId,
