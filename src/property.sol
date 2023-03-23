@@ -8,12 +8,16 @@ contract Assets is ERC1155 {
     uint256 public constant House = 1;
     uint256 public constant Land = 2;
 
-    constructor(address _seller, uint16 _amount) ERC1155("https://ipfs.io/ipfs/bafybeigxgjr3bre3vvro7duzpz2j5tfrhwnarlqw6yq5cce6fo5qh3u7yq/{id}.json") {
+    constructor(address _seller) ERC1155("https://ipfs.io/ipfs/bafybeigxgjr3bre3vvro7duzpz2j5tfrhwnarlqw6yq5cce6fo5qh3u7yq/{id}.json") {
 
-        _mint(_seller, House, _amount, "");
-        _mint(_seller, Land, 15, "");
+        _mint(_seller, House, 30, "");
+        _mint(_seller, Land, 50, "");
     }
 
+
+    function mintProperty(address _to, uint256 _nftId, uint16 _amount) public {
+         _mint(_to, _nftId, _amount, "");
+    }
     function uri(uint256 _tokenid) override public pure returns (string memory) {
         return string(
             abi.encodePacked(
