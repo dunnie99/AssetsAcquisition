@@ -3,16 +3,12 @@ pragma solidity ^0.8.0;
 
 import "../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
-
-contract Assets is ERC1155 {
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+contract Assets is ERC1155, Ownable {
     uint256 public constant House = 1;
     uint256 public constant Land = 2;
 
-    constructor(address _seller) ERC1155("https://ipfs.io/ipfs/bafybeigxgjr3bre3vvro7duzpz2j5tfrhwnarlqw6yq5cce6fo5qh3u7yq/{id}.json") {
-
-        _mint(_seller, House, 30, "");
-        _mint(_seller, Land, 50, "");
-    }
+    constructor() ERC1155("https://ipfs.io/ipfs/bafybeigxgjr3bre3vvro7duzpz2j5tfrhwnarlqw6yq5cce6fo5qh3u7yq/{id}.json") {}
 
 
     function mintProperty(address _to, uint256 _nftId, uint16 _amount) public {
