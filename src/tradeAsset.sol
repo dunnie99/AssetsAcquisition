@@ -11,8 +11,13 @@ import "../lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/Aggrega
 
 contract tradeAssets is ERC1155Holder {
     //function events
-    event PropertyListed(uint256 indexed propertyId, uint256 indexed nftId, address indexed oldOwner);
+    event PropertyListed(
+        uint256 indexed propertyId,
+        uint256 indexed nftId,
+        address indexed oldOwner
+    );
     event PropertySold(uint256 indexed propertyId, address indexed newOwner);
+    event onlyOwnerWithdrawal(address indexed moderator, uint256 indexed propertyNftId, address indexed recipientAddress, IERC1155  tokenAddress);
 
     //chainlink price feed addresses.
     AggregatorV3Interface ETHLINK =
@@ -33,7 +38,7 @@ contract tradeAssets is ERC1155Holder {
     IERC20 internal USDT;
     IERC20 internal UNI;
 
-    uint256 public tokenDecimal;
+    //uint256 public tokenDecimal;
     address public moderator;
 
     //Property info struct
@@ -56,7 +61,7 @@ contract tradeAssets is ERC1155Holder {
     uint256[] public propertyIds;
 
     constructor() {
-        tokenDecimal = 1e8;
+        //tokenDecimal = 1e8;
         LINK = IERC20(0x514910771AF9Ca656af840dff83E8264EcF986CA);
         AAVE = IERC20(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
         DAI = IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
@@ -98,7 +103,13 @@ contract tradeAssets is ERC1155Holder {
         require(idUsed[_propertyId] == false, "ID already taken");
         idUsed[_propertyId] = true;
         propertyIds.push(_propertyId);
-        _propertyNft.safeTransferFrom(msg.sender, address(this), _propertyNftId, 1,"0x0");
+        _propertyNft.safeTransferFrom(
+            msg.sender,
+            address(this),
+            _propertyNftId,
+            1,
+            "0x0"
+        );
 
         Property memory newProperty = Property({
             forSale: true,
@@ -113,7 +124,7 @@ contract tradeAssets is ERC1155Holder {
 
         properties[_propertyId] = newProperty;
 
-        emit PropertyListed( _propertyId, _propertyNftId, msg.sender);
+        emit PropertyListed(_propertyId, _propertyNftId, msg.sender);
     }
 
     function buyPropertyUSDT(uint256 _propertyId) public {
@@ -135,25 +146,52 @@ contract tradeAssets is ERC1155Holder {
     function buyPropertyAAVE(uint256 _propertyId) public {
         buyProperty(_propertyId, ETHAAVE, AAVE);
     }
+
     function buyProperty(
-        uint256 _propertyId, AggregatorV3Interface _token2swap, IERC20 _tokenAddress 
+        uint256 _propertyId,
+        AggregatorV3Interface _token2swap,
+        IERC20 _tokenAddress
     ) internal isValidID(_propertyId) {
-            Property storage property = properties[_propertyId];
-            uint256 usdt = uint256(getPrice(_token2swap));
-            uint256 propertyPrice = property.price * usdt;
-            address newOwner = msg.sender;
-            require(propertyPrice <= _tokenAddress.balanceOf(newOwner), "Insufficient balance for property purchase");
-            _tokenAddress.transferFrom(newOwner, property.owner, propertyPrice);
-            (property.nft).safeTransferFrom(address(this), newOwner, property.nftId, 1, "0x0");
-            property.forSale = false;
+        Property storage property = properties[_propertyId];
+        require(property.forSale == true, "Property sold out");
+        uint256 usdt = uint256(getPrice(_token2swap));
+        uint256 propertyPrice = property.price * usdt;
+        address newOwner = msg.sender;
+        require(
+            propertyPrice <= _tokenAddress.balanceOf(newOwner),
+            "Insufficient balance for property purchase"
+        );
+        _tokenAddress.transferFrom(newOwner, property.owner, propertyPrice);
+        (property.nft).safeTransferFrom(
+            address(this),
+            newOwner,
+            property.nftId,
+            1,
+            "0x0"
+        );
+        property.forSale = false;
+        property.owner = newOwner;
 
-
-            emit PropertySold( _propertyId, newOwner);
-
-
+        emit PropertySold(_propertyId, newOwner);
     }
 
-    fallback() external payable{}
+    function withdrawTokens(IERC1155 _tokenAddress, address _recipientAddress, uint256 _propertyNftId, uint256 _propertyID) external onlyOwner() {
+        require(_recipientAddress != address(0), "Invalid address");
+        require(idUsed[_propertyID], "Invalid PropertyID");
+        Property storage property = properties[_propertyID];
+        require(property.nftId == _propertyNftId, "Invalid _propertyNftId");
+        _tokenAddress.safeTransferFrom(
+            address(this),
+            _recipientAddress,
+            _propertyNftId,
+            1,
+            "0x0"
+        );
+
+        emit onlyOwnerWithdrawal(msg.sender, _propertyNftId, _recipientAddress, _tokenAddress);
+    }
+
+    fallback() external payable {}
+
     receive() external payable {}
-    
 }
