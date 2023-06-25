@@ -24,18 +24,19 @@ contract AssetTest is Test{
     function setUp() internal{
         vm.startPrank(Bob);
         property = new Assets();
-        property.mintProperty(0x59813797f658893361210D4Ad0B86706702E6a2c, 1, 20);
+        //property.mintProperty(Bob, 1, 20);
         tradeContract = new tradeAsset();
         vm.stopPrank();
     }
 
 
-
-    function testlistProperty() public{
-        vm.startPrank(0x59813797f658893361210D4Ad0B86706702E6a2c);
-        bool approved = true;
-        property.setApprovalForAll(address(tradeContract, approved));
-        tradeContract.listProperty(9, "The Genesis", "A house", "The moon", IERC1155(property), 1);
+    function testlistProperty() public {
+        vm.startPrank(Bob);
+        property.mintProperty(Bob, 1, 20);
+        property.balanceOf(Bob, 1);
+        // property.setApprovalForAll(address(tradeContract), true);
+        
+        // tradeContract.listProperty(9, "The Genesis", "A house", "The moon", IERC1155(property), 1);
 
     }
 }

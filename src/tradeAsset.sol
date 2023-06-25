@@ -16,8 +16,16 @@ contract tradeAsset is ERC1155Holder {
         uint256 indexed nftId,
         address indexed oldOwner
     );
-    event PropertySold(uint256 indexed propertyId, address indexed newOwner);
-    event onlyOwnerWithdrawal(address indexed moderator, uint256 indexed propertyNftId, address indexed recipientAddress, IERC1155  tokenAddress);
+    event PropertySold(
+        uint256 indexed propertyId, 
+        address indexed newOwner
+    );
+    event OnlyOwnerWithdrawal(
+        address indexed moderator, 
+        uint256 indexed propertyNftId, 
+        address indexed recipientAddress, 
+        IERC1155  tokenAddress
+    );
 
     //chainlink price feed addresses.
     AggregatorV3Interface ETHLINK =
@@ -192,13 +200,13 @@ contract tradeAsset is ERC1155Holder {
             "0x0"
         );
 
-        emit onlyOwnerWithdrawal(msg.sender, _propertyNftId, _recipientAddress, _tokenAddress);
+        emit OnlyOwnerWithdrawal(msg.sender, _propertyNftId, _recipientAddress, _tokenAddress);
     }
 
-    function withdrawTokens(IERC20 _tokenAddress, address _recipientAddress, uint _amount) external onlyOwner(){
+    function withdrawTokens(address _tokenAddress, address payable _recipientAddress, uint _amount) external onlyOwner(){
         require(_recipientAddress != address(0), "Invalid address");
-        require(_amount <= _tokenAddress.balanceOf(address(this)), "Insufficient acount balance");
-        _tokenAddress.transferFrom(address(this), _recipientAddress, _amount);
+        require(_amount <= IERC20(_tokenAddress).balanceOf(address(this)), "Insufficient acount balance");
+        IERC20(_tokenAddress).transferFrom(address(this), _recipientAddress, _amount);
     }
 
 
