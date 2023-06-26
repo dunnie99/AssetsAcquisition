@@ -14,7 +14,6 @@ contract Assets is ERC1155, Ownable {
 
     function mintProperty(address account, uint256 id, uint256 amount)
         public
-        onlyOwner
     {
         _mint(account, id, amount, "");
     }

@@ -21,22 +21,23 @@ contract AssetTest is Test{
     address Femi = vm.addr(0x5);
     address Nonso = vm.addr(0x6);
 
-    function setUp() internal{
-        vm.startPrank(Bob);
+    function setUp() public {
+        
         property = new Assets();
-        //property.mintProperty(Bob, 1, 20);
+        property.mintProperty(Bob, 1, 20);
+        property.balanceOf(Bob, 1);
         tradeContract = new tradeAsset();
-        vm.stopPrank();
     }
 
 
     function testlistProperty() public {
+        setUp();
         vm.startPrank(Bob);
-        property.mintProperty(Bob, 1, 20);
-        property.balanceOf(Bob, 1);
-        // property.setApprovalForAll(address(tradeContract), true);
+        //property.mintProperty(Bob, 1, 20);
         
-        // tradeContract.listProperty(9, "The Genesis", "A house", "The moon", IERC1155(property), 1);
+        property.setApprovalForAll(address(tradeContract), true);
+        
+        tradeContract.listProperty(9, "The Genesis", "A house", "The moon", IERC1155(property), 1);
 
     }
 }
